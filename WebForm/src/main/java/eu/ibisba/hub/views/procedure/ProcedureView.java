@@ -20,6 +20,7 @@ import eu.ibisba.hub.backend.ISA.Assay;
 import eu.ibisba.hub.backend.ISA.Investigation;
 import eu.ibisba.hub.backend.ISA.Study;
 import eu.ibisba.hub.backend.Workflow;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -67,7 +68,7 @@ public class ProcedureView extends Div {
            // When value is changed... not sure if button which changes the value will trigger this event
             // erase all selected items and add all obtained
             selectedItems.clear();
-            selectedItems.addAll(getWorkflows(textAreaStringComponentValueChangeEvent.getValue().split(","), workflows));
+            selectedItems.addAll(getWorkflowsOrder(textAreaStringComponentValueChangeEvent.getValue().split(","), workflows));
             // Refresh grid as new items have been added
             gridSelection.getDataProvider().refreshAll();
         });
@@ -77,7 +78,7 @@ public class ProcedureView extends Div {
 
         // Update content upon grid selection
         addButton.addClickListener(buttonClickEvent -> {
-            selectedItems.addAll(grid.getSelectedItems());
+            selectedItems.addAll(orderGrid(workflows, grid.getSelectedItems()));
             gridSelection.getDataProvider().refreshAll();
             String message = "";
             for (Workflow workflow : selectedItems) {
@@ -111,83 +112,32 @@ public class ProcedureView extends Div {
         VerticalLayout verticalLayout = new VerticalLayout();
         verticalLayout.add(grid, gridSelection, textArea);
         add(verticalLayout, submitButton, addButton, removeButton);
-
-        /*
-        OLD stuff 2
-         */
-
-
-//        gridDrag.setColumns("firstname", "lastname", "email");
-//        gridDrag.setItems(employeesDrag);
-//        gridDrag.setSelectionMode(Grid.SelectionMode.NONE);
-//        gridDrag.setRowsDraggable(true);
-//
-//        gridDrag.addDragStartListener(event -> {
-//            draggedItem = event.getDraggedItems().get(0);
-//            gridDrag.setDropMode(GridDropMode.BETWEEN);
-//        });
-//
-//        gridDrag.addDragEndListener(event -> {
-//            draggedItem = null;
-//            gridDrag.setDropMode(null);
-//        });
-//
-//        gridDrag.addDropListener(event -> {
-//            Employee dropOverItem = event.getDropTargetItem().get();
-//            if (!dropOverItem.equals(draggedItem)) {
-//                employeesDrag.remove(draggedItem);
-//                int dropIndex = employeesDrag.indexOf(dropOverItem)
-//                        + (event.getDropLocation() == GridDropLocation.BELOW ? 1
-//                        : 0);
-//                employeesDrag.add(dropIndex, draggedItem);
-//                gridDrag.getDataProvider().refreshAll();
-//            }
-//        });
-//
-//        // Add
-//        add(gridDrag);
-
-        /*
-        OLD STUFF BELOW
-         */
-
-        // Configure Grid
-//        employees = new Grid<>();
-//        employees.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-//        employees.setHeightFull();
-//        employees.addColumn(Employee::getFirstname).setHeader("First name");
-//        employees.addColumn(Employee::getLastname).setHeader("Last name");
-//        employees.addColumn(Employee::getEmail).setHeader("Email");
-//
-//        //when a row is selected or deselected, populate form
-//        employees.asSingleSelect().addValueChangeListener(event -> populateForm(event.getValue()));
-//
-//        // Configure Form
-//        binder = new Binder<>(Employee.class);
-//
-//        // Bind fields. This where you'd define e.g. validation rules
-//        binder.bindInstanceFields(this);
-//        // note that password field isn't bound since that property doesn't exist in
-//        // Employee
-//
-//        // the grid valueChangeEvent will clear the form too
-//        cancel.addClickListener(e -> employees.asSingleSelect().clear());
-//
-//        save.addClickListener(e -> {
-//            Notification.show("Not implemented");
-//        });
-
-
-//        SplitLayout splitLayout = new SplitLayout();
-//        splitLayout.setSizeFull();
-
-//        createGridLayout(splitLayout);
-//        createEditorLayout(splitLayout);
-
-//        add(splitLayout);
     }
 
-    private Set<Workflow> getWorkflows(String[] workflowIdentifiers, ArrayList<Workflow> workflows) {
+    /**
+     * Function to reorder the selected items according to the workflows list
+     * @param workflows the original set of workflows according to the ISA object
+     * @param selectedItems the selected set of items from the workflow
+     * @return the reorder selection
+     */
+    private Collection<? extends Workflow> orderGrid(ArrayList<Workflow> workflows, Set<Workflow> selectedItems) {
+        ArrayList<String> identifiers = new ArrayList<>();
+        ArrayList<Workflow> selection = new ArrayList<>();
+        for (Workflow item : selectedItems) {
+            identifiers.add(String.valueOf(item.getAssay().getIdentifier()));
+        }
+
+        for (Workflow workflow : workflows) {
+            String identifier = String.valueOf(workflow.getAssay().getIdentifier());
+            if (identifiers.contains(identifier)) {
+                // TODO see if we can preserve the submission procedure not the identifier order as selected as these are "random"
+                selection.add(workflow);
+            }
+        }
+        return selection;
+    }
+
+    private Set<Workflow> getWorkflowsOrder(String[] workflowIdentifiers, ArrayList<Workflow> workflows) {
         List<String> identifiers = Arrays.asList(workflowIdentifiers);
         Set<Workflow> selection = new HashSet<>();
         for (Workflow workflow : workflows) {
@@ -257,11 +207,8 @@ public class ProcedureView extends Div {
     private ArrayList<Workflow> populateWorkflow(ArrayList<Investigation> investigations) {
         ArrayList<Workflow> workflows = new ArrayList<>();
         for (Investigation investigation : investigations) {
-//            System.err.println(investigation.getDescription());
             for (Study study : investigation.getStudy()) {
-//                System.err.println(study.getDescription());
                 for (Assay assay : study.getAssay()) {
-//                    System.err.println(assay.getDescription());
                     Workflow workflow = new Workflow(investigation, study, assay);
                     workflows.add(workflow);
                 }
