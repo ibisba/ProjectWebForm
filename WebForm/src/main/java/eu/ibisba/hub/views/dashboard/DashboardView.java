@@ -21,7 +21,7 @@ import com.vaadin.flow.router.RouteAlias;
 
 import eu.ibisba.hub.MainView;
 @Route(value = "dashboard", layout = MainView.class)
-@RouteAlias(value = "", layout = MainView.class)
+//@RouteAlias(value = "", layout = MainView.class)
 @PageTitle("Dashboard")
 @CssImport("styles/views/dashboard/dashboard-view.css")
 public class DashboardView extends Div {

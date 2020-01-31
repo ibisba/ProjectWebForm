@@ -5,6 +5,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -13,6 +14,7 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import eu.ibisba.hub.MainView;
 import eu.ibisba.hub.backend.BackendService;
 import eu.ibisba.hub.backend.IBISBASubmission;
@@ -20,12 +22,12 @@ import eu.ibisba.hub.backend.ISA.Assay;
 import eu.ibisba.hub.backend.ISA.Investigation;
 import eu.ibisba.hub.backend.ISA.Study;
 import eu.ibisba.hub.backend.Workflow;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
 @Route(value = "procedure", layout = MainView.class)
+@RouteAlias(value = "", layout = MainView.class)
 @PageTitle("Procedure")
 @CssImport("styles/views/masterdetail/master-detail-view.css")
 public class ProcedureView extends Div {
@@ -74,7 +76,7 @@ public class ProcedureView extends Div {
         });
 
         Button addButton = new Button();
-        addButton.setText("Add to queue");
+        addButton.setText("Add to plan");
 
         // Update content upon grid selection
         addButton.addClickListener(buttonClickEvent -> {
@@ -88,7 +90,7 @@ public class ProcedureView extends Div {
         });
 
         Button removeButton = new Button();
-        removeButton.setText("Remove from queue");
+        removeButton.setText("Remove from plan");
 
         // TODO fix according to original order
         removeButton.addClickListener(buttonClickEvent -> {
@@ -110,8 +112,15 @@ public class ProcedureView extends Div {
 
         // Layout
         VerticalLayout verticalLayout = new VerticalLayout();
-        verticalLayout.add(grid, gridSelection, textArea);
-        add(verticalLayout, submitButton, addButton, removeButton);
+        // Button layout
+        HorizontalLayout horizontalLayout = new HorizontalLayout();
+        horizontalLayout.setWidthFull();
+        horizontalLayout.add(submitButton, addButton, removeButton);
+        horizontalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        // Grid with buttons in between layout
+        verticalLayout.add(grid, horizontalLayout, gridSelection, textArea);
+        add(verticalLayout);
+        // add(verticalLayout, submitButton, addButton, removeButton);
     }
 
     /**
